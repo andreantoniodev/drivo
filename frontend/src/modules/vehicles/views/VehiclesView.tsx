@@ -33,7 +33,7 @@ export const VehiclesView: React.FC = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-[40px] font-bold tracking-[-1.2px] text-fg">Meus veículos</h1>
             <Link
-              href="/veiculos/novo"
+              href="/vehicles/new"
               aria-label="Adicionar veículo"
               className="w-10 h-10 rounded-full bg-accent hover:bg-accent-hover active:bg-accent-pressed flex items-center justify-center text-white transition-colors"
             >

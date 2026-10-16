@@ -1,10 +1,30 @@
 # 🚗 DRIVO — Garagem inteligente com leitura de CRLV por IA
 
 Desafio técnico **Desenvolvedor Fullstack Junior 1 — EPTA Softwares**.
-Briefing: [EPTA-Softwares/fullstack-junior-1](https://github.com/EPTA-Softwares/fullstack-junior-1)
 
 O Drivo é um web app para montar e gerenciar sua garagem. Ao cadastrar um veículo, o usuário pode
 importar o **CRLV** (PDF ou imagem) e o formulário é preenchido automaticamente com a **API do Google Gemini**.
+
+## Links
+
+| | |
+| :--- | :--- |
+| **Briefing** | [EPTA-Softwares/fullstack-junior-1](https://github.com/EPTA-Softwares/fullstack-junior-1) |
+| **Figma** | [Protótipo no Figma](https://www.figma.com/design/kMDaB78808CbApQRhg8kVF/Untitled?node-id=1-833&t=HL0fcN1gkWiim6VF-1) |
+| **Aplicação no ar** | [drivo.adapp.dev.br](https://drivo.adapp.dev.br) |
+
+## Credenciais de teste
+
+| E-mail | Senha |
+| :--- | :--- |
+| `mariana.costa@email.com` | `Drivo@2026` |
+
+Usuário com 5 veículos de exemplo (o Corolla vem com CRLV).
+
+## CRLVs de exemplo
+
+A pasta [`exemplos/crlv`](exemplos/crlv) tem 3 documentos **fictícios** (PDF, PNG e uma "foto de celular") para testar a
+importação sem usar dados reais.
 
 ## Sumário
 
@@ -15,7 +35,7 @@ importar o **CRLV** (PDF ou imagem) e o formulário é preenchido automaticament
 5. [Como executar os testes](#3-como-executar-os-testes)
 6. [Decisões técnicas](#4-decisões-técnicas)
 7. [Limitações](#5-limitações-conhecidas)
-8. [O que seria feito com mais tempo](#6-o-que-seria-feito-com-mais-tempo)
+8. [O que eu faria com mais tempo](#6-o-que-eu-faria-com-mais-tempo)
 9. [API](#api)
 
 ---
@@ -24,12 +44,12 @@ importar o **CRLV** (PDF ou imagem) e o formulário é preenchido automaticament
 
 | Requisito do briefing | Onde |
 | :--- | :--- |
-| Login, cadastro e logout | `/login`, `/register`, "Sair da conta" em `/perfil` |
+| Login, cadastro e logout | `/login`, `/register`, "Sair da conta" em `/profile` |
 | Visualizar e pesquisar veículos | `/` (busca por placa, modelo ou marca com debounce) |
-| Criar veículo | `/veiculos/novo` |
-| Importar CRLV e preencher com Gemini | Painel "Importar CRLV" em `/veiculos/novo` e "Atualizar com novo CRLV" na edição |
-| Editar e excluir veículo | `/veiculos/[id]` (exclusão com modal de confirmação) |
-| Alterar dados cadastrais e senha | `/perfil` |
+| Criar veículo | `/vehicles/new` |
+| Importar CRLV e preencher com Gemini | Painel "Importar CRLV" em `/vehicles/new` e "Atualizar com novo CRLV" na edição |
+| Editar e excluir veículo | `/vehicles/[id]` (exclusão com modal de confirmação) |
+| Alterar dados cadastrais e senha | `/profile` |
 | Estados de loading, erro e vazio | Garagem (skeleton, erro com retry, vazia, busca sem resultado) e edição |
 | Documentação OpenAPI | Swagger em `http://localhost:3001/api/docs` |
 
@@ -133,15 +153,7 @@ cd frontend
 npm run dev
 ```
 
-### CRLVs de exemplo
-
-A pasta [`exemplos/crlv`](exemplos/crlv) tem 3 documentos **fictícios** (PDF, PNG e uma "foto de celular") para testar a
-importação sem usar dados reais.
-
-### Usuário de demonstração
-
-| E-mail | Senha | Veículos |
-| :--- | :--- | :--- |
+--- | :--- | :--- |
 | `mariana.costa@email.com` | `Drivo@2026` | 5 veículos do Figma (o Corolla vem com CRLV) |
 
 ---
@@ -190,116 +202,95 @@ npx tsc --noEmit
 
 ## 4. Decisões técnicas
 
-**Tecnologias escolhidas**
+Aqui explico, de forma direta, o que escolhi e por quê.
 
-- **Prisma como ORM** (versão 7): modelo tipado, migrations versionadas e driver adapter `pg`. A URL de conexão não fica
-  no `schema.prisma` (formato aceito pelo Prisma 7 e pela extensão do VS Code): o CLI lê `prisma.config.ts` e a
-  aplicação conecta por `@prisma/adapter-pg`. O client é gerado em `backend/src/generated` (fora do git:
-  `npx prisma generate`) e o seed roda com `tsx`.
-- **`class-validator` + `class-transformer`** para validar e transformar DTOs na borda da API (`whitelist` e
-  `forbidNonWhitelisted`).
-- **`helmet`** para os cabeçalhos de segurança e **`@nestjs/throttler`** para o rate limit (por usuário nas rotas
-  autenticadas e por IP nas públicas).
-- **React Hook Form + Zod** nos formulários, com as mesmas regras de validação do backend.
-- **Axios** com interceptors (token e tratamento de 401) e **Lucide** para os ícones.
-- **Vitest + Testing Library** no frontend e **Jest + Supertest** no backend.
+**Tecnologias**
 
-**Dados e API**
+- **NestJS + Prisma + PostgreSQL**: o Nest organiza o código em módulos, controllers e services, o que ajuda a manter o
+  projeto arrumado. Escolhi o Prisma pela tipagem e pelas migrations versionadas, que deixam o banco fácil de recriar.
+- **Next.js + Tailwind**: o App Router facilita separar as páginas e o Tailwind agilizou a montagem das telas do Figma.
+- **React Hook Form + Zod**: validação dos formulários com as mesmas regras do backend, para o usuário ver o erro antes
+  de enviar.
+- **Testes**: Jest e Supertest no backend; Vitest e Testing Library no frontend.
 
-- **Placa única por usuário no banco**: `@@unique([userId, plate])`. O service traduz o erro `P2002` em 409, então
-  requisições simultâneas com a mesma placa resultam em 1 criação e 409 nas demais (coberto por teste E2E).
-- **Isolamento por usuário**: toda consulta de veículo filtra por `userId`; o recurso de outro usuário responde 404,
-  para não revelar que ele existe.
-- **Respostas serializadas por DTO**: cada rota declara `@SerializeAs(Dto)` e só os campos com `@Expose()` saem na
-  resposta (lista branca). O hash da senha, o caminho do arquivo do CRLV no servidor (`fileUrl`) e o JSON bruto da IA
-  (`rawAiExtraction`) nunca chegam ao cliente, e uma coluna nova no banco não vaza sem um DTO que a exponha.
-- **Pipe, filtro e interceptor globais no `AppModule`** (`APP_PIPE`/`APP_FILTER`/`APP_INTERCEPTOR`) e não em
-  `main.ts`, para que os testes E2E exercitem exatamente o mesmo comportamento da aplicação.
-- **Configuração tipada e validada**: `ConfigModule` valida as variáveis na subida (`EnvironmentVariables`),
-  centraliza os valores padrão e a API falha rápido, com mensagem clara, se algo obrigatório faltar.
-- **Fotos dos veículos no banco** (tabela `vehicle_images`, bytes), enviadas pelo seed e servidas por
-  `GET /vehicles/:id/image` **autenticada**. Como `<img>` não envia headers, o frontend busca a imagem com o token
-  (blob) e a exibe, com cache por URL versionada (`?v=`). As consultas de veículo nunca trazem os bytes.
-- **Seed idempotente e não destrutivo**: roda a cada start do container sem apagar dados.
-- **Apelido do veículo**: o Figma tem "Apelido (opcional)", então o modelo `Vehicle` ganhou `nickname`.
-- **Nome e sobrenome**: o Figma tem dois campos e o backend guarda um `name`; o primeiro termo é o nome e o restante,
-  o sobrenome.
+**Backend e dados**
+
+- **Validação nos DTOs**: uso `class-validator` com `whitelist` e `forbidNonWhitelisted`, então campos que não existem
+  no DTO são recusados.
+- **Cada usuário só vê os próprios veículos**: toda consulta filtra por `userId`. Se o veículo for de outra pessoa,
+  a API responde 404, para não revelar que ele existe.
+- **Placa única por usuário**: criei um índice único (`userId` + `plate`) no banco. Se a placa já existir, a API
+  responde 409.
+- **Respostas por DTO**: só os campos marcados com `@Expose()` saem na resposta. Assim o hash da senha e os dados
+  internos do CRLV nunca chegam ao cliente.
+- **Variáveis de ambiente validadas**: se faltar algo obrigatório (como o `JWT_SECRET`), a API não sobe e mostra o erro.
+- **Fotos dos veículos no banco**: guardei as imagens numa tabela e sirvo por uma rota autenticada. É simples para o
+  escopo do desafio; em produção o ideal seria um storage de objetos (está em "o que eu faria com mais tempo").
 
 **Leitura do CRLV com o Gemini**
 
-- **Saída estruturada**: o prompt usa `responseSchema` (JSON estrito) e o backend sanitiza o resultado (placa,
-  separação marca/modelo, remoção de prefixos como `I/`).
-- **Extração conservadora**: todos os campos são `nullable` e a `temperature` é 0; o que o modelo não identifica fica
-  `null`, nunca é inventado. O backend ainda descarta placa fora do padrão e data de emissão inválida.
-- **Falhas explícitas**: sem chave → 503; erro/timeout do Gemini → 502; documento ilegível → 422. Picos de demanda
-  (503/429) passam pelos modelos de reserva (`GEMINI_FALLBACK_MODELS`) e por uma segunda rodada antes de falhar; erros
-  permanentes não são repetidos. O modo demonstração só existe com `GEMINI_MOCK=true` e é sinalizado na tela.
-- **Scan separado do cadastro**: `POST /crlv/scan` lê em memória e não grava nada; o arquivo só vai para o disco em
-  `POST /crlv/attach/:id`, depois que o veículo existe.
-- **CRLV em três responsabilidades**: `GeminiExtractionService` (IA, reserva, sanitização), `CrlvStorageService`
-  (arquivos em disco) e `CrlvService` (casos de uso e persistência).
+- **Resposta em JSON com schema**: peço ao Gemini um JSON no formato esperado e uso `temperature` 0 para a resposta
+  variar menos.
+- **Sem inventar dados**: o que o modelo não identifica volta como `null`, e o backend descarta uma placa fora do padrão.
+- **Erros claros**: sem chave da API retorna 503, falha do Gemini retorna 502 e documento ilegível retorna 422. Em
+  caso de instabilidade, a API tenta modelos de reserva antes de falhar.
+- **Ler e salvar são passos separados**: `POST /crlv/scan` só lê o documento e preenche o formulário. O arquivo só é
+  salvo em `POST /crlv/attach/:id`, depois que o veículo existe.
 
 **Segurança**
 
-- **Segredos por ambiente**: `JWT_SECRET` obrigatório (sem valor embutido no código) e CORS configurável.
-- **Cabeçalhos de segurança (helmet)**: CSP restritiva na API (`default-src 'none'`, sem iframes) e uma CSP própria
-  para o Swagger UI em `/api/docs` (scripts e estilos só da própria origem). Sem `upgrade-insecure-requests`, para não
-  quebrar o uso em `http` local, e com `Cross-Origin-Resource-Policy: cross-origin`, pois o frontend consome a API de
-  outra origem (o CORS decide quem lê).
-- **Tratamento de 401 no frontend**: o interceptor distingue sessão expirada de erro de credencial (login e troca de
-  senha) para não deslogar o usuário por engano.
+- Senha com hash `bcrypt`, autenticação por JWT e `helmet` para os cabeçalhos de segurança.
+- Rate limit (`@nestjs/throttler`) para reduzir tentativas repetidas de login e abuso das rotas.
+- CORS configurável por variável de ambiente.
 
 **Frontend**
 
-- **Organização por módulos** (`modules/auth`, `vehicles`, `profile`) com `shared/` para o que é transversal, e um
-  **design system** próprio (`shared/design-system`) com os tokens e componentes do frame "Design System" do Figma.
+- Código organizado por módulos (`auth`, `vehicles`, `profile`) e uma pasta `shared/` com o que se repete, incluindo
+  um design system com os componentes do Figma.
+- O interceptor do Axios só desloga o usuário quando a sessão expira, e não quando ele erra a senha.
 
 ---
 
 ## 5. Limitações conhecidas
 
-- **Privacidade**: ao importar um CRLV, o arquivo inteiro (incluindo nome e CPF/CNPJ do proprietário) é enviado
-  à API do Google Gemini. O Drivo não guarda a resposta bruta da IA, mas o conteúdo passa por um serviço de terceiros.
-- **Limite de upload de 10 MB**, aplicado na API (resposta 413) e na tela. Arquivos maiores precisam ser reduzidos.
-- **Validação do tipo do arquivo** pelo `Content-Type` enviado pelo cliente, sem inspeção do conteúdo.
-- **Dados sem criptografia em repouso**: placa, RENAVAM, chassi e os dados do proprietário no CRLV ficam em texto no banco
-  (a senha do usuário é guardada com hash `bcrypt`). A criptografia está listada em "o que seria feito com mais tempo".
-- **Logout não revoga o JWT**: o token continua válido até expirar (7 dias). Não há refresh token nem lista de revogação.
-- **Arquivos do CRLV em disco local** (volume Docker), sem storage de objetos nem antivírus.
-- **Não é possível adicionar foto ao cadastrar um veículo**: o briefing e o Figma não preveem esse campo (as telas de
-  Novo e Editar veículo não têm foto), então só os veículos do seed têm foto e os novos mostram o logo do Drivo como
-  placeholder. A tabela `vehicle_images` e a rota `GET /vehicles/:id/image` já estão prontas para receber o upload.
-- **Listagem sem paginação nem filtros**: a garagem carrega todos os veículos do usuário e só tem busca textual.
-- **Sem exclusão de conta** (o backend não tem esse endpoint).
-- **Sem testes de ponta a ponta no navegador**: o frontend tem testes de unidade e de componentes, mas os fluxos completos (login → CRUD → CRLV) ainda são verificados manualmente.
+O que ainda não está resolvido, para ficar claro o que o projeto faz e o que não faz:
 
-## 6. O que seria feito com mais tempo
+- **Privacidade no CRLV**: ao importar, o arquivo inteiro (com nome e CPF/CNPJ do proprietário) é enviado ao Google
+  Gemini. Eu não guardo a resposta bruta da IA, mas o conteúdo passa por um serviço de terceiros.
+- **Upload de até 10 MB**: a API responde 413 e a tela avisa. Arquivos maiores precisam ser reduzidos.
+- **Tipo do arquivo**: confio no `Content-Type` enviado pelo cliente, sem olhar o conteúdo do arquivo.
+- **Dados sensíveis sem criptografia**: placa, RENAVAM, chassi e dados do proprietário ficam em texto no banco (só a
+  senha tem hash `bcrypt`).
+- **Logout só no cliente**: o token JWT continua válido até expirar (7 dias), porque não há refresh token nem revogação.
+- **Arquivos do CRLV em disco local** (volume do Docker), sem storage de objetos nem antivírus.
+- **Sem foto no cadastro**: o briefing e o Figma não têm esse campo, então só os veículos do seed têm foto e os novos
+  mostram o logo do Drivo. A tabela de imagens e a rota `GET /vehicles/:id/image` já estão prontas para o upload.
+- **Listagem sem paginação nem filtros**: a garagem carrega todos os veículos do usuário e só tem busca por texto.
+- **Sem exclusão de conta**: o backend não tem esse endpoint.
 
-1. **Tabela de configurações do sistema** (`nome`, `descrição`, `valor`): hoje o prompt enviado ao Gemini, os modelos
-   de reserva, os limites (tamanho do arquivo, tentativas, tempo limite) e outros parâmetros ficam no código ou em
-   variáveis de ambiente. Com a tabela, eles seriam lidos do banco (com cache e fallback para o padrão) e poderiam ser
-   ajustados sem novo deploy, por exemplo para refinar o prompt do CRLV.
-2. **Sistema de filas** para o scan do CRLV (BullMQ + Redis): a requisição devolveria um identificador, o
-   processamento rodaria em segundo plano com reprocessamento automático em falhas e picos do Gemini, e a tela
-   acompanharia o status. Inclui cache por hash do arquivo para não reler o mesmo documento.
-3. **Paginação e filtros na listagem de veículos**: paginação no servidor (cursor ou página/limite), ordenação e filtros
-   por marca, combustível, ano e cor, além da busca por placa, modelo, RENAVAM e chassi, com os parâmetros refletidos
-   na URL.
-4. **Criptografia dos dados sensíveis do veículo no banco**: RENAVAM, chassi e placa (e os dados pessoais do CRLV,
-   como nome e CPF/CNPJ do proprietário) seriam gravados criptografados em repouso (AES-256-GCM no nível da aplicação,
-   com a chave fora do banco, em variável de ambiente ou gerenciador de segredos, e rotação de chaves). A busca por
-   placa passaria a usar um índice cego (hash determinístico) para continuar possível sem expor o valor.
-5. **Testes E2E no navegador**: Playwright cobrindo login, cadastro, CRUD e importação de CRLV, e testes dos
-   formulários de veículo e perfil (hoje cobertos só pelos schemas e pelas ações).
+## 6. O que eu faria com mais tempo
+
+1. **Configurações no banco**: hoje o prompt do Gemini, os modelos de reserva e os limites ficam no código ou em
+   variáveis de ambiente. Uma tabela de configurações permitiria ajustá-los sem novo deploy.
+2. **Fila para o scan do CRLV** (BullMQ + Redis): o processamento rodaria em segundo plano, com nova tentativa em caso
+   de falha do Gemini, e a tela acompanharia o status. Também guardaria um cache pelo hash do arquivo.
+3. **Paginação e filtros na listagem**: paginação no servidor, ordenação e filtros por marca, combustível, ano e cor,
+   com os parâmetros na URL.
+4. **Criptografia dos dados sensíveis**: RENAVAM, chassi, placa e dados do proprietário gravados criptografados
+   (AES-256-GCM), com a chave fora do banco. A busca por placa continuaria possível com um hash.
+5. **Testes E2E no navegador** com Playwright (login, cadastro, CRUD e importação de CRLV) e testes dos formulários de
+   veículo e perfil.
 6. **Sessão mais robusta**: refresh token com rotação e revogação no logout.
-7. **Foto no cadastro e na edição do veículo** (upload pela tela) e storage de objetos (S3 compatível) para as fotos e os
-   documentos do CRLV.
-8. **Compressão e redimensionamento de imagens**: as fotos dos veículos hoje são otimizadas manualmente antes do
-   seed (1000 px de largura, JPEG q82). Com upload pela tela, o backend faria isso automaticamente (por exemplo com
-   `sharp`): limitar as dimensões, recomprimir, converter para WebP/AVIF, gerar miniaturas para os cartões da garagem e
-   rejeitar arquivos acima do limite, reduzindo o tamanho no banco e o tráfego de rede.
-9. **CI** (lint, tipos, testes e build das imagens) e logs estruturados com correlação por requisição.
-10. **Exclusão de conta** e exportação dos dados (LGPD).
+7. **Upload de foto pela tela** e storage de objetos (S3 compatível) para fotos e documentos do CRLV.
+8. **Tratamento de imagens no upload**: o backend ainda não processa imagens. Com o upload de foto pela tela, ele
+   validaria o tipo e o tamanho, redimensionaria e recomprimiria o arquivo (por exemplo com `sharp`) e geraria
+   miniaturas para os cartões da garagem, reduzindo o tamanho no banco e o tráfego.
+9. **Exclusão de conta** e exportação dos dados (LGPD).
+10. **Contrato de erros da API**: hoje o campo `message` às vezes é texto e às vezes é uma lista (na validação), e o
+    frontend trata cada caso separado. Eu definiria um formato único, como `{ statusCode, code, message, details?,
+    requestId }`, com um `code` estável (`VEHICLE_PLATE_TAKEN`, `VALIDATION_FAILED`), documentado no Swagger. O filtro
+    também trataria erros inesperados (Prisma, Gemini) sem expor detalhes internos, e o frontend usaria o `code` em
+    vez de comparar textos.
 
 ---
 

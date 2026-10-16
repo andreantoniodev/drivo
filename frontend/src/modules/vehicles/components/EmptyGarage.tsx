@@ -12,7 +12,7 @@ export const EmptyGarage: React.FC = () => (
           automaticamente.
         </p>
       </div>
-      <Link href="/veiculos/novo?importar=crlv">
+      <Link href="/vehicles/new?import=crlv">
         <Button>Importar CRLV</Button>
       </Link>
     </div>

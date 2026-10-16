@@ -33,3 +33,7 @@ backend/uploads/
 coverage/
 
 backend/src/generated/
+
+next-env.d.ts
+*.pem
+.vercel

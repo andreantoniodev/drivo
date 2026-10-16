@@ -16,9 +16,9 @@ const navItems = [
   {
     href: '/',
     label: 'Meus veículos',
-    isActive: (path: string) => path === '/' || path.startsWith('/veiculos'),
+    isActive: (path: string) => path === '/' || path.startsWith('/vehicles'),
   },
-  { href: '/perfil', label: 'Perfil', isActive: (path: string) => path.startsWith('/perfil') },
+  { href: '/profile', label: 'Perfil', isActive: (path: string) => path.startsWith('/profile') },
 ];
 
 export const Header: React.FC<HeaderProps> = ({ className }) => {
@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ className }) => {
       </nav>
 
       <Link
-        href="/perfil"
+        href="/profile"
         className="flex items-center gap-3 text-sm text-fg-muted hover:text-fg transition-colors"
       >
         <span className="hidden sm:block">{user?.name}</span>

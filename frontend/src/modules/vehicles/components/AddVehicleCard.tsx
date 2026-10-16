@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react';
 
 export const AddVehicleCard: React.FC = () => (
   <Link
-    href="/veiculos/novo"
+    href="/vehicles/new"
     className="min-h-[408px] flex flex-col items-center justify-center gap-3 p-6 rounded-[20px] border-2 border-dashed border-surface hover:border-surface-3 transition-colors text-center"
   >
     <span className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center text-fg">

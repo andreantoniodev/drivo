@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (!token && (pathname.startsWith('/veiculos') || pathname.startsWith('/perfil'))) {
+  if (!token && (pathname.startsWith('/vehicles') || pathname.startsWith('/profile'))) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

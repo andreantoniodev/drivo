@@ -50,7 +50,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className }) 
 
   return (
     <Link
-      href={`/veiculos/${vehicle.id}`}
+      href={`/vehicles/${vehicle.id}`}
       className={cn(
         'group flex flex-col bg-surface rounded-[22px] overflow-hidden select-none',
         'focus-visible:outline-2 focus-visible:outline-accent',

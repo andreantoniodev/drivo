@@ -56,7 +56,7 @@ export const NewVehicleView: React.FC = () => {
       return;
     }
 
-    router.push(result.crlvError ? `/veiculos/${result.vehicleId}` : '/');
+    router.push(result.crlvError ? `/vehicles/${result.vehicleId}` : '/');
   };
 
   return (

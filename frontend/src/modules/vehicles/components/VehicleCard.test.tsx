@@ -46,7 +46,7 @@ describe('VehicleCard', () => {
 
   it('leva à edição do veículo', () => {
     render(<VehicleCard vehicle={vehicle} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/veiculos/veh-1');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/vehicles/veh-1');
   });
 
   it('usa "—" quando RENAVAM e chassi não existem e mostra placeholder sem foto', () => {

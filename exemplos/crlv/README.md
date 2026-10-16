@@ -11,5 +11,5 @@ Arquivos para testar a importação de CRLV no Drivo sem usar documentos reais.
 
 As placas não existem no seed, então dá para salvar os três veículos sem conflito.
 
-Como usar: em `/veiculos/novo`, painel **Importar CRLV** → **Escolher arquivo**. Requer `GEMINI_API_KEY`
+Como usar: em `/vehicles/new`, painel **Importar CRLV** → **Escolher arquivo**. Requer `GEMINI_API_KEY`
 configurada (ou `GEMINI_MOCK=true`, que devolve sempre um exemplo fixo e não lê o arquivo).
